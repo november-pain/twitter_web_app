@@ -4,7 +4,7 @@ from geopy.extra.rate_limiter import RateLimiter
 from geopy.geocoders import Nominatim
 
 
-geolocator = Nominatim(timeout=100)
+geolocator = Nominatim(timeout=100, user_agent="Macs")
 geocode = RateLimiter(geolocator.geocode, error_wait_seconds=0.5,
                       max_retries=0, swallow_exceptions=False, return_value_on_exception=True)
 
@@ -23,17 +23,16 @@ def get_file_json(name_acc, num_of_friends):
     context.verify_mode = ssl.CERT_NONE
     url = twurl.augment(url, {'name': name_acc, 'num': num_of_friends})
     data = urllib.request.urlopen(url, context=context).read().decode()
-    sonjey = json.loads(data, encoding='utf-8')
-    return sonjey
+    # sonjey = json.loads(data, encoding='utf-8')
+    return data
 
 
 def get_location(path):
-    with open(path, encoding='utf-8') as f:
-        f_js = json.loads(f)
-        users_locations_dct = {}
-        for user in f_js['users']:
-            users_locations_dct[user['screen_name']] = user['location']
-        return users_locations_dct
+    f_js = json.loads(path)
+    users_locations_dct = {}
+    for user in f_js['users']:
+        users_locations_dct[user['screen_name']] = user['location']
+    return users_locations_dct
 
 
 def friend_mark(friend_dict, map, acc):
@@ -49,18 +48,13 @@ def friend_mark(friend_dict, map, acc):
     map.add_child(friends_layer)
 
 
+def main(acc, num):
+    son_jey = get_file_json(acc, num)
+    map = folium.Map()
+    friend_mark(get_location(son_jey), map, acc)
+    return map._repr_html_()
+
+
 
 if __name__ == '__main__':
-    #account = input("Enter a twitter account:")
-    account = '@Max97753798'
-    number_of_friends = input("Enter a number of friends that you wanna search:")
-
-    son_jey = get_file_json(account, number_of_friends)
-    with open('data.json', 'w') as f:
-        json.dump(son_jey, f, ensure_ascii=False, indent=4)
-
-
-    map = folium.Map()
-    friend_mark(get_location('data.json'), map, account)
-    map.save('map.html')
-
+    pass
